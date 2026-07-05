@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark"><span class="wordmark-dot"></span>Marketing Command Center</div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="campaigns">Campaigns</button>
+    <button class="tab-btn" data-tab="calendar">Content Calendar</button>
+    <button class="tab-btn" data-tab="seo">SEO Tracker</button>
+  </nav>
+  <button class="icon-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+</header>
+
+<main>
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="tab-panel active" id="panel-overview">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">Total Spend</p>
+        <p class="stat-value" id="stat-spend">$0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Total Revenue</p>
+        <p class="stat-value" id="stat-revenue">$0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Blended ROAS</p>
+        <p class="stat-value" id="stat-roas">0.0x</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Upcoming Content</p>
+        <p class="stat-value" id="stat-content">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Keywords Tracked</p>
+        <p class="stat-value" id="stat-keywords">0</p>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="chart-card">
+        <h3>Spend by Channel</h3>
+        <canvas id="chartSpendByChannel"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Top Keyword Movers (7d)</h3>
+        <div id="keywordMovers" class="mover-list"></div>
+      </div>
+    </div>
+
+    <div class="chart-card full-width">
+      <h3>This Week's Content</h3>
+      <div id="upcomingContentList" class="upcoming-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== CAMPAIGNS ===== -->
+  <section class="tab-panel" id="panel-campaigns">
+    <div class="section-header">
+      <h2>Campaign Performance</h2>
+      <button class="btn-primary" id="openCampaignModalBtn">+ New Campaign</button>
+    </div>
+
+    <div class="chart-card">
+      <canvas id="chartChannelComparison"></canvas>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="campaignTable">
+        <thead>
+          <tr>
+            <th>Campaign</th><th>Channel</th><th>Spend</th><th>Impressions</th>
+            <th>Clicks</th><th>CTR</th><th>CPC</th><th>Conversions</th>
+            <th>CPA</th><th>Revenue</th><th>ROAS</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="campaignTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== CONTENT CALENDAR ===== -->
+  <section class="tab-panel" id="panel-calendar">
+    <div class="section-header">
+      <h2 id="calendarMonthLabel">Content Calendar</h2>
+      <div class="calendar-controls">
+        <button class="btn-ghost" id="prevMonthBtn">‹</button>
+        <button class="btn-ghost" id="nextMonthBtn">›</button>
+        <button class="btn-primary" id="openContentModalBtn">+ New Post</button>
+      </div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </section>
+
+  <!-- ===== SEO TRACKER ===== -->
+  <section class="tab-panel" id="panel-seo">
+    <div class="section-header">
+      <h2>SEO Keyword Tracker</h2>
+      <button class="btn-primary" id="openKeywordModalBtn">+ Track Keyword</button>
+    </div>
+
+    <div class="chart-card">
+      <canvas id="chartKeywordTrend"></canvas>
+    </div>
+
+    <div class="keyword-cards" id="keywordCards"></div>
+  </section>
+
+</main>
+
+<!-- ===== MODAL: Campaign ===== -->
+<div class="modal-overlay" id="campaignModalOverlay">
+  <div class="modal">
+    <h2 id="campaignModalTitle">New Campaign</h2>
+    <form id="campaignForm">
+      <label>Campaign name</label>
+      <input type="text" id="cName" required placeholder="e.g. Summer Sale Push">
+
+      <label>Channel</label>
+      <select id="cChannel">
+        <option>Instagram</option><option>Google Ads</option><option>Email</option>
+        <option>Facebook</option><option>LinkedIn</option><option>TikTok</option>
+      </select>
+
+      <div class="form-row">
+        <div><label>Spend ($)</label><input type="number" id="cSpend" min="0" step="0.01" required></div>
+        <div><label>Revenue ($)</label><input type="number" id="cRevenue" min="0" step="0.01" required></div>
+      </div>
+      <div class="form-row">
+        <div><label>Impressions</label><input type="number" id="cImpressions" min="0" required></div>
+        <div><label>Clicks</label><input type="number" id="cClicks" min="0" required></div>
+      </div>
+      <label>Conversions</label>
+      <input type="number" id="cConversions" min="0" required>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="campaignCancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary" id="campaignSubmitBtn">Add Campaign</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: Content ===== -->
+<div class="modal-overlay" id="contentModalOverlay">
+  <div class="modal">
+    <h2>New Content</h2>
+    <form id="contentForm">
+      <label>Title</label>
+      <input type="text" id="pTitle" required placeholder="e.g. Product teaser reel">
+
+      <label>Channel</label>
+      <select id="pChannel">
+        <option>Instagram</option><option>Google Ads</option><option>Email</option>
+        <option>Facebook</option><option>LinkedIn</option><option>TikTok</option><option>Blog</option>
+      </select>
+
+      <label>Date</label>
+      <input type="date" id="pDate" required>
+
+      <label>Linked campaign <span class="hint">(optional)</span></label>
+      <select id="pCampaign"><option value="">None</option></select>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="contentCancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Add to Calendar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: Keyword ===== -->
+<div class="modal-overlay" id="keywordModalOverlay">
+  <div class="modal">
+    <h2>Track New Keyword</h2>
+    <form id="keywordForm">
+      <label>Keyword / phrase</label>
+      <input type="text" id="kTerm" required placeholder="e.g. best running shoes 2026">
+      <div class="form-row">
+        <div><label>Current rank</label><input type="number" id="kRank" min="1" required></div>
+        <div><label>Monthly traffic (est.)</label><input type="number" id="kTraffic" min="0" required></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="keywordCancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Start Tracking</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: Update Keyword Rank ===== -->
+<div class="modal-overlay" id="rankModalOverlay">
+  <div class="modal">
+    <h2>Update Ranking</h2>
+    <form id="rankForm">
+      <label>New rank position</label>
+      <input type="number" id="newRank" min="1" required>
+      <label>New monthly traffic (est.)</label>
+      <input type="number" id="newTraffic" min="0" required>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="rankCancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Save Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
